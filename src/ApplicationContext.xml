@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:aop="http://www.springframework.org/schema/aop"
+  xmlns:tx="http://www.springframework.org/schema/tx"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context-2.5.xsd
+  http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+  http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+  
+
+<!-- 一般来说，这些注解我们还是比较常用，尤其是Antowired的注解，
+在自动注入的时候更是经常使用，所以如果总是需要
+按照传统的方式一条一条配置显得有些繁琐和没有必要，
+于是spring给我们提供<context:annotation-config/>的简化配置方式， -->
+<context:annotation-config/>
+
+<!-- 不过，我们使用注解一般都会配置扫描包路径选项 -->
+<context:component-scan base-package="com.java"></context:component-scan>
+
+<!-- 在使用SpringMvc的时候，配置文件中我们经常看到 annotation-driven 这样的注解，
+其含义就是支持注解，一般根据前缀 tx、mvc 等也能很直白的理解出来分别的作用。
+<tx:annotation-driven/> 就是支持事务注解的（@Transactional） 、
+<mvc:annotation-driven> 就是支持mvc注解的，
+说白了就是使Controller中可以使用MVC的各种注解。 -->
+<tx:annotation-driven/>
+
+<!-- spring3中提供了一种简便的方式就是context:property-placeholder/元素
+只需要在spring的配置文件里添加一句：
+<context:property-placeholder location="classpath:jdbc.properties"/> 即可，
+这里location值为参数配置文件的位置，参数配置文件通常放在src目录下，
+而参数配置文件的格式跟java通用的参数配置文件相同，即键值对的形式 -->
+<context:property-placeholder location="classpath:mysql.properties"/>
+
+<!-- destroy-method="close"的作用是当数据库连接不使用的时候,就把该连接重新放到数据池中,方便下次使用调用. -->
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+</bean>
+        <!-- 在Mybatis中,SqlSessionFactoryBuilder用于创建SqlSessionFactory。
+        	而在Mybatis-Spring中SqlSessionFactoryBean将取而代之。
+        	为了得到factory bean，如上节所示，需在Spring XML中配置  -->
+        <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        	<property name="dataSource" ref="dataSource" />  
+        </bean>
+        <!-- 配置事务管理器，注意这里的dataSource和SqlSessionFactoryBean的dataSource要一致，
+        	不然事务就没有作用了 -->
+        <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        	<property name="dataSource" ref="dataSource" />
+        </bean>
+        <!-- 下面这段配置会扫描com.java.mapper下的所有接口，然后创建各自接口的动态代理类。 -->
+        <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        	<property name="basePackage" value="com.java.mapper"></property>
+        </bean>
+        
+        <bean id="bookServiceImpl" class="com.java.service.impl.BookServiceImpl"></bean>
+ 		<bean id="userServiceImpl" class="com.java.service.impl.UserServiceImpl"></bean>
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
